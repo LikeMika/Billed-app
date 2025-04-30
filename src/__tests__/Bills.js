@@ -120,3 +120,39 @@ describe("Given I am connected as an employee", () => {
 
   })
 })
+
+// test d'intégration GET Bills
+describe("Given I am a user connected as Employee", () => {
+  describe("When I navigate to Bills Page", () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "a@a" }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+    })
+
+    test("fetches bills from mock API GET", async () => {
+      window.store = {
+        bills: () => ({
+          list: () => Promise.resolve([
+            {
+              id: "1",
+              date: "2024-04-01",
+              status: "pending",
+              type: "Hôtel",
+              name: "Facture avril",
+              amount: 100,
+              fileUrl: "https://example.com/facture.jpg"
+            }
+          ])
+        })
+      }
+      window.onNavigate(ROUTES_PATH.Bills)
+      await waitFor(() => screen.getByText("Mes notes de frais"))
+      expect(screen.getByText("Mes notes de frais")).toBeTruthy()
+      expect(screen.getByTestId("tbody").children.length).toBeGreaterThan(0)
+    })
+  })
+})
