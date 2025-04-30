@@ -48,6 +48,9 @@ export default ({ data: bills, loading, error }) => {
     return ErrorPage(error)
   }
   
+  // On affiche les dates de la plus grande à la plus petite - Bug 1
+  (bills || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
