@@ -72,6 +72,8 @@ export default class {
     this.document = document
     this.onNavigate = onNavigate
     this.store = store
+    // on remet l'objet à vide
+    this.billStates = {}
     $('#arrow-icon1').click((e) => this.handleShowTickets(e, bills, 1))
     $('#arrow-icon2').click((e) => this.handleShowTickets(e, bills, 2))
     $('#arrow-icon3').click((e) => this.handleShowTickets(e, bills, 3))
@@ -85,30 +87,34 @@ export default class {
     if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
   }
 
-  handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-    if (this.counter % 2 === 0) {
-      bills.forEach(b => {
-        $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
-      })
-      $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
-      $('.dashboard-right-container div').html(DashboardFormUI(bill))
-      $('.vertical-navbar').css({ height: '150vh' })
-      this.counter ++
-    } else {
-      $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-
-      $('.dashboard-right-container div').html(`
-        <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
-      `)
-      $('.vertical-navbar').css({ height: '120vh' })
-      this.counter ++
-    }
-    $('#icon-eye-d').click(this.handleClickIconEye)
-    $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
-    $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
-  }
+  // On modifie la logique de sauvegarde du billID pour corriger le bug 4
+   handleEditTicket(e, bill, bills) {
+     const billId = bill.id
+     if (this.billStates[billId] === undefined) {
+       this.billStates[billId] = false
+     }
+ 
+     if (!this.billStates[billId]) {
+       bills.forEach(b => {
+         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
+       })
+       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
+       $('.dashboard-right-container div').html(DashboardFormUI(bill))
+       $('.vertical-navbar').css({ height: '150vh' })
+       this.counter ++
+     } else {
+       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
+ 
+       $('.dashboard-right-container div').html(`
+         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
+       `)
+       $('.vertical-navbar').css({ height: '120vh' })
+       this.counter ++
+     }
+     $('#icon-eye-d').click(this.handleClickIconEye)
+     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
+     $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
+   }
 
   handleAcceptSubmit = (e, bill) => {
     const newBill = {
