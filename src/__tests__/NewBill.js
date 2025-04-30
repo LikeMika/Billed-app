@@ -114,3 +114,65 @@ describe("Given I am connected as an employee", () => {
     })
   })
 })
+
+// Test d'Integration
+describe("Given I am a user connected as Employee", () => {
+  describe("When I submit a new bill form", () => {
+    test("Then it should create a new bill in mock API POST and redirect to Bills page", async () => {
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: jest.fn(() =>
+            JSON.stringify({
+              type: "Employee",
+              email: "employee@test.com"
+            })
+          )
+        },
+        writable: true
+      })
+
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+
+      //Spy sur onNavigate
+      const onNavigate = jest.fn()
+
+      // Mock complet store.bills
+      jest.spyOn(mockStore, "bills").mockImplementation(() => ({
+        create: () => Promise.resolve({ fileUrl: "https://localhost/test.jpg", key: "1234" }),
+        update: () => Promise.resolve(),
+        list: () => Promise.resolve([])
+      }))
+
+      document.body.innerHTML = NewBillUI()
+
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
+      })
+
+      // On rempli le formulaire
+      screen.getByTestId("expense-type").value = "Restaurants et bars"
+      screen.getByTestId("expense-name").value = "Déjeuner client"
+      screen.getByTestId("datepicker").value = "2024-04-15"
+      screen.getByTestId("amount").value = "150"
+      screen.getByTestId("vat").value = "30"
+      screen.getByTestId("pct").value = "20"
+      screen.getByTestId("commentary").value = "Déjeuner avec un client important"
+
+      // Simulation d'un fichier déjà uploadé
+      newBill.fileUrl = "https://localhost/test.jpg"
+      newBill.fileName = "test.jpg"
+      newBill.billId = "1234"
+
+      const form = screen.getByTestId("form-new-bill")
+      form.addEventListener("submit", newBill.handleSubmit)
+      fireEvent.submit(form)
+      expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH.Bills)
+    })
+  })
+})
