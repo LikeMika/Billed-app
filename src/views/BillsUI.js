@@ -48,9 +48,26 @@ export default ({ data: bills, loading, error }) => {
     return ErrorPage(error)
   }
   
+  // ajouté hors de la soutenance (à renvoyer)
+  function parseCustomDate(dateStr) {
+    const months = {
+      janv: 0, févr: 1, mars: 2, avr: 3, mai: 4, juin: 5,
+      juil: 6, août: 7, sept: 8, oct: 9, nov: 10, déc: 11
+    };
+  
+    const parts = dateStr.toLowerCase().replace('.', '').split(' ');
+    const day = parseInt(parts[0], 10);
+    const month = months[parts[1]];
+    const year = parseInt(parts[2], 10) + 2000;
+  
+    return new Date(year, month, day);
+  }
+  
+
   // On affiche les dates de la plus grande à la plus petite - Bug 1
   (bills || []).sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
